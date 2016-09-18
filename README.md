@@ -1,5 +1,5 @@
 
-# fsx v1.0.0 ![stable](https://img.shields.io/badge/stability-stable-4EBA0F.svg?style=flat)
+# fsx v1.1.0 ![stable](https://img.shields.io/badge/stability-stable-4EBA0F.svg?style=flat)
 
 Bare essentials `fs` wrapper. Zero dependencies.
 
@@ -14,3 +14,6 @@ fs = require "fsx"
 - `fs.readFile(filePath) -> string`
 - `fs.readDir(dirPath) -> [string]`
 - `fs.readLink(linkPath) -> string`
+- `fs.writeDir(dirPath) -> void`
+- `fs.writeFile(filePath, string) -> void`
+- `fs.writeLink(linkPath, targetPath) -> string`

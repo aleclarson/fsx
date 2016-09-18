@@ -30,6 +30,15 @@ readFile = (filePath) ->
 readLink = (linkPath) ->
   fs.readlinkSync linkPath
 
+writeDir = (dirPath) ->
+  fs.mkdirSync dirPath
+
+writeFile = (filePath, string) ->
+  fs.writeFileSync filePath, string
+
+writeLink = (linkPath, targetPath) ->
+  fs.symlinkSync targetPath, linkPath
+
 module.exports = {
   exists
   isDir
@@ -38,4 +47,7 @@ module.exports = {
   readDir
   readFile
   readLink
+  writeDir
+  writeFile
+  writeLink
 }
