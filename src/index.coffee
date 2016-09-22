@@ -1,4 +1,5 @@
 
+path = require "path"
 fs = require "fs"
 
 exists = (filePath) ->
@@ -31,6 +32,8 @@ readLink = (linkPath) ->
   fs.readlinkSync linkPath
 
 writeDir = (dirPath) ->
+  return if isDir dirPath
+  writeDir path.dirname dirPath
   fs.mkdirSync dirPath
 
 writeFile = (filePath, string) ->
