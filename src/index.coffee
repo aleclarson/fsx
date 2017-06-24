@@ -25,7 +25,8 @@ isLink = (filePath) ->
 readDir = (dirPath) ->
   fs.readdirSync dirPath
 
-readFile = (filePath, encoding = "utf8") ->
+readFile = (filePath, encoding) ->
+  encoding = "utf8" if encoding is undefined
   fs.readFileSync filePath, encoding
 
 readLink = (linkPath) ->
