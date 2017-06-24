@@ -43,6 +43,9 @@ writeFile = (filePath, string) ->
 writeLink = (linkPath, targetPath) ->
   fs.symlinkSync targetPath, linkPath
 
+removeFile = (filePath) ->
+  fs.unlinkSync filePath
+
 module.exports = {
   exists
   isDir
@@ -54,4 +57,5 @@ module.exports = {
   writeDir
   writeFile
   writeLink
+  removeFile
 }
