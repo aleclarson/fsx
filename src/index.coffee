@@ -2,60 +2,158 @@
 path = require "path"
 fs = require "fs"
 
-exists = (filePath) ->
-  try # The line below throws when nothing exists at the given path.
-    result = fs.lstatSync filePath
-  return result isnt undefined
+# Constants used for determining file type.
+{S_IFMT, S_IFREG, S_IFDIR, S_IFLNK} = fs.constants
 
-isDir = (filePath) ->
-  try # The line below throws when nothing exists at the given path.
-    result = fs.statSync(filePath).isDirectory()
-  return result is yes
+exports.exists = (filePath) ->
+  getMode(filePath) isnt undefined
 
-isFile = (filePath) ->
-  try # The line below throws when nothing exists at the given path.
-    result = fs.statSync(filePath).isFile()
-  return result is yes
+exports.isDir = (filePath) ->
+  getMode(filePath) is S_IFDIR
 
-isLink = (filePath) ->
-  try # The line below throws when nothing exists at the given path.
-    result = fs.lstatSync(filePath).isSymbolicLink()
-  return result is yes
+exports.isFile = (filePath) ->
+  getMode(filePath) is S_IFREG
 
-readDir = (dirPath) ->
-  fs.readdirSync dirPath
+exports.isLink = (filePath) ->
+  getMode(filePath) is S_IFLNK
 
-readFile = (filePath, encoding) ->
+exports.readDir = (dirPath) ->
+  unless mode = getMode dirPath
+    throw Error "Cannot use `readDir` on a non-existent path: '#{dirPath}'"
+  if mode isnt S_IFDIR
+    throw Error "Expected a directory: '#{dirPath}'"
+  return fs.readdirSync dirPath
+
+exports.readFile = (filePath, encoding) ->
+  unless mode = getMode filePath
+    throw Error "Cannot use `readFile` on a non-existent path: '#{filePath}'"
+  if mode is S_IFDIR
+    throw Error "Cannot use `readFile` on a directory: '#{filePath}'"
   encoding = "utf8" if encoding is undefined
-  fs.readFileSync filePath, encoding
+  return fs.readFileSync filePath, encoding
 
-readLink = (linkPath) ->
-  fs.readlinkSync linkPath
+exports.readLink = (linkPath) ->
+  unless mode = getMode linkPath
+    throw Error "Cannot use `readLink` on a non-existent path: '#{linkPath}'"
+  if mode is S_IFLNK
+    return fs.readlinkSync linkPath
+  return linkPath
 
-writeDir = (dirPath) ->
-  return if isDir dirPath
-  writeDir path.dirname dirPath
-  fs.mkdirSync dirPath
+exports.writeDir = (dirPath) ->
+  unless mode = getMode dirPath
+    exports.writeDir path.dirname dirPath
+    return fs.mkdirSync dirPath
+  if mode isnt S_IFDIR
+    throw Error "Cannot use `writeDir` on an existing path: '#{dirPath}'"
 
-writeFile = (filePath, string) ->
-  fs.writeFileSync filePath, string
+exports.writeFile = (filePath, string) ->
+  if getMode(filePath) isnt S_IFDIR
+    return fs.writeFileSync filePath, string
+  throw Error "Cannot use `writeFile` on a directory: '#{filePath}'"
 
-writeLink = (linkPath, targetPath) ->
-  fs.symlinkSync targetPath, linkPath
+exports.writeLink = (linkPath, targetPath) ->
+  unless getMode linkPath
+    return fs.symlinkSync targetPath, linkPath
+  throw Error "Cannot use `writeLink` on an existing path: '#{linkPath}'"
 
-removeFile = (filePath) ->
-  fs.unlinkSync filePath
+exports.removeDir = (dirPath) ->
+  unless mode = getMode dirPath
+    throw Error "Cannot use `removeDir` on a non-existent path: '#{dirPath}'"
+  if mode isnt S_IFDIR
+    throw Error "Expected a directory: '#{dirPath}'"
+  if ".." is path.relative(process.cwd(), dirPath).slice 0, 2
+    throw Error "Cannot use `removeDir` on paths outside of the current directory: '#{dirPath}'"
+  return removeTree dirPath
 
-module.exports = {
-  exists
-  isDir
-  isFile
-  isLink
-  readDir
-  readFile
-  readLink
-  writeDir
-  writeFile
-  writeLink
-  removeFile
-}
+exports.removeFile = (filePath) ->
+  unless mode = getMode filePath
+    throw Error "Cannot use `removeFile` on a non-existent path: '#{filePath}'"
+  if mode is S_IFDIR
+    throw Error "Cannot use `removeFile` on a directory: '#{filePath}'"
+  return fs.unlinkSync filePath
+
+exports.rename = (oldPath, newPath) ->
+  if getMode oldPath
+    if getMode(newPath) is S_IFDIR
+      throw Error "Cannot overwrite directory path: '#{newPath}'"
+    exports.writeDir path.dirname newPath
+    return fs.renameSync oldPath, newPath
+  throw Error "Cannot `rename` non-existent path: '#{oldPath}'"
+
+exports.copy = (srcPath, destPath) ->
+
+  unless mode = getMode srcPath
+    throw Error "Cannot `copy` non-existent path: '#{srcPath}'"
+
+  destMode = getMode destPath
+
+  if mode is S_IFDIR
+    return copyTree srcPath, destPath, destMode
+
+  if destMode is S_IFDIR
+    destPath = path.join destPath, path.basename srcPath
+    destMode = getMode destPath
+
+  if destMode
+    if destMode is S_IFDIR
+      throw Error "Cannot overwrite directory path: '#{destPath}'"
+    fs.unlinkSync destPath
+
+  if mode is S_IFLNK
+  then copyLink srcPath, destPath
+  else fs.writeFileSync destPath, fs.readFileSync srcPath
+
+#
+# Helpers
+#
+
+getMode = (filePath) ->
+  try mode = fs.lstatSync(filePath).mode & S_IFMT
+  return mode
+
+copyLink = (srcPath, destPath) ->
+  filePath = fs.readlinkSync srcPath
+  unless path.isAbsolute filePath
+    filePath = path.resolve path.dirname(srcPath), filePath
+    filePath = path.relative path.dirname(destPath), filePath
+  return fs.symlinkSync filePath, destPath
+
+# Overwrite the `destPath` with contents of the `srcPath`.
+copyFile = (srcPath, destPath) ->
+  mode = getMode srcPath
+  destMode = getMode destPath
+
+  if mode is S_IFDIR
+    return copyTree srcPath, destPath, destMode
+
+  if destMode
+    if destMode is S_IFDIR
+    then removeTree destPath
+    else fs.unlinkSync destPath
+
+  if mode is S_IFLNK
+  then copyLink srcPath, destPath
+  else fs.writeFileSync destPath, fs.readFileSync srcPath
+
+# Recursive tree copies.
+copyTree = (srcPath, destPath, destMode) ->
+
+  # Remove the file under our new path, if needed.
+  if destMode and destMode isnt S_IFDIR
+    fs.unlinkSync destPath
+
+  # Create the directory, if needed.
+  if destMode isnt S_IFDIR
+    fs.mkdirSync destPath
+
+  fs.readdirSync(srcPath).forEach (file) ->
+    copyFile path.join(srcPath, file), path.join(destPath, file)
+
+# Recursive tree deletion.
+removeTree = (dirPath) ->
+  fs.readdirSync(dirPath).forEach (file) ->
+    filePath = path.join dirPath, file
+    if getMode(filePath) is S_IFDIR
+    then removeTree filePath
+    else fs.unlinkSync filePath
+  fs.rmdirSync dirPath
