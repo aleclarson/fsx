@@ -39,9 +39,9 @@ exports.readLink = (linkPath) ->
     return fs.readlinkSync linkPath
   return linkPath
 
-exports.writeDir = (dirPath) ->
+exports.writeDir = writeDir = (dirPath) ->
   unless mode = getMode dirPath
-    exports.writeDir path.dirname dirPath
+    writeDir path.dirname dirPath
     return fs.mkdirSync dirPath
   if mode isnt S_IFDIR
     throw Error "Cannot use `writeDir` on an existing path: '#{dirPath}'"
@@ -80,7 +80,7 @@ exports.rename = (srcPath, destPath) ->
       throw Error "Cannot `rename` directory to pre-existing path: '#{destPath}'"
   else if getMode(destPath) is S_IFDIR
     throw Error "Cannot overwrite directory path: '#{destPath}'"
-  exports.writeDir path.dirname destPath
+  writeDir path.dirname destPath
   return fs.renameSync srcPath, destPath
 
 exports.copy = (srcPath, destPath) ->
@@ -101,6 +101,9 @@ exports.copy = (srcPath, destPath) ->
     if destMode is S_IFDIR
       throw Error "Cannot overwrite directory path: '#{destPath}'"
     fs.unlinkSync destPath
+
+  # Create missing parent directories.
+  writeDir path.dirname destPath
 
   if mode is S_IFLNK
   then copyLink srcPath, destPath
@@ -133,6 +136,9 @@ copyFile = (srcPath, destPath) ->
     then removeTree destPath
     else fs.unlinkSync destPath
 
+  # Create missing parent directories.
+  writeDir path.dirname destPath
+
   if mode is S_IFLNK
   then copyLink srcPath, destPath
   else fs.writeFileSync destPath, fs.readFileSync srcPath
@@ -147,6 +153,7 @@ copyTree = (srcPath, destPath) ->
 
   # Create the directory, if needed.
   if destMode isnt S_IFDIR
+    writeDir path.dirname destPath
     fs.mkdirSync destPath
 
   fs.readdirSync(srcPath).forEach (file) ->
