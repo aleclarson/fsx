@@ -72,13 +72,16 @@ exports.removeFile = (filePath) ->
     throw Error "Cannot use `removeFile` on a directory: '#{filePath}'"
   return fs.unlinkSync filePath
 
-exports.rename = (oldPath, newPath) ->
-  if getMode oldPath
-    if getMode(newPath) is S_IFDIR
-      throw Error "Cannot overwrite directory path: '#{newPath}'"
-    exports.writeDir path.dirname newPath
-    return fs.renameSync oldPath, newPath
-  throw Error "Cannot `rename` non-existent path: '#{oldPath}'"
+exports.rename = (srcPath, destPath) ->
+  unless mode = getMode srcPath
+    throw Error "Cannot `rename` non-existent path: '#{srcPath}'"
+  if mode is S_IFDIR
+    if getMode destPath
+      throw Error "Cannot `rename` directory to pre-existing path: '#{destPath}'"
+  else if getMode(destPath) is S_IFDIR
+    throw Error "Cannot overwrite directory path: '#{destPath}'"
+  exports.writeDir path.dirname destPath
+  return fs.renameSync srcPath, destPath
 
 exports.copy = (srcPath, destPath) ->
 
