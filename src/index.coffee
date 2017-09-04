@@ -88,10 +88,10 @@ exports.copy = (srcPath, destPath) ->
   unless mode = getMode srcPath
     throw Error "Cannot `copy` non-existent path: '#{srcPath}'"
 
-  destMode = getMode destPath
-
   if mode is S_IFDIR
-    return copyTree srcPath, destPath, destMode
+    return copyTree srcPath, destPath
+
+  destMode = getMode destPath
 
   if destMode is S_IFDIR
     destPath = path.join destPath, path.basename srcPath
@@ -124,12 +124,11 @@ copyLink = (srcPath, destPath) ->
 # Overwrite the `destPath` with contents of the `srcPath`.
 copyFile = (srcPath, destPath) ->
   mode = getMode srcPath
-  destMode = getMode destPath
 
   if mode is S_IFDIR
-    return copyTree srcPath, destPath, destMode
+    return copyTree srcPath, destPath
 
-  if destMode
+  if destMode = getMode destPath
     if destMode is S_IFDIR
     then removeTree destPath
     else fs.unlinkSync destPath
@@ -139,7 +138,8 @@ copyFile = (srcPath, destPath) ->
   else fs.writeFileSync destPath, fs.readFileSync srcPath
 
 # Recursive tree copies.
-copyTree = (srcPath, destPath, destMode) ->
+copyTree = (srcPath, destPath) ->
+  destMode = getMode destPath
 
   # Remove the file under our new path, if needed.
   if destMode and destMode isnt S_IFDIR
