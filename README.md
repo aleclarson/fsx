@@ -23,6 +23,9 @@ fs.readFile filePath
 # Returns the path pointed to by the given link path.
 fs.readLink linkPath
 
+# Returns the first non-link path pointed to by the given link path.
+fs.readLinks linkPath
+
 # Create a directory at the given path.
 fs.writeDir dirPath
 

@@ -39,6 +39,18 @@ exports.readLink = (linkPath) ->
     return fs.readlinkSync linkPath
   return linkPath
 
+exports.readLinks = (linkPath, maxDepth = 100) ->
+  depth = 0
+  filePath = linkPath
+  while (mode = getMode filePath) and (mode is S_IFLNK)
+    prevPath = filePath
+    filePath = fs.readlinkSync filePath
+    if filePath[0] is "."
+      filePath = path.resolve path.dirname(prevPath), filePath
+    if ++depth > maxDepth
+      uhoh "Failed to resolve link: '#{linkPath}'", "MAX_DEPTH"
+  return filePath
+
 exports.writeDir = writeDir = (dirPath) ->
   unless mode = getMode dirPath
     writeDir path.dirname dirPath
