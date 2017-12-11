@@ -121,6 +121,8 @@ exports.copy = (srcPath, destPath) ->
   then copyLink srcPath, destPath
   else fs.writeFileSync destPath, fs.readFileSync srcPath
 
+exports.watch = fs.watch
+
 #
 # Helpers
 #
