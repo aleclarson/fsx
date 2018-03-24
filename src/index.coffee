@@ -5,6 +5,9 @@ fs = require "fs"
 # Constants used for determining file type.
 {S_IFMT, S_IFREG, S_IFDIR, S_IFLNK} = fs.constants
 
+exports.ReadStream = fs.ReadStream
+exports.WriteStream = fs.WriteStream
+
 exports.exists = (filePath) ->
   getMode(filePath) isnt undefined
 
