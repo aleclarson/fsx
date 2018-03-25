@@ -11,6 +11,13 @@ exports.WriteStream = fs.WriteStream
 exports.open = fs.openSync
 exports.close = fs.closeSync
 
+exports.read = (file, opts) ->
+  if typeof file is "number"
+    if opts then opts.fd = file
+    else opts = fd: file
+    file = null
+  new fs.ReadStream file, opts
+
 exports.exists = (filePath) ->
   getMode(filePath) isnt undefined
 
