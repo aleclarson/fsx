@@ -11,6 +11,9 @@ exports.WriteStream = fs.WriteStream
 exports.open = fs.openSync
 exports.close = fs.closeSync
 
+exports.stat = fs.statSync
+exports.lstat = fs.lstatSync
+
 exports.read = (file, opts) ->
   if typeof file is "number"
     if opts then opts.fd = file
