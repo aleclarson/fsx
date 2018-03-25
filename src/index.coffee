@@ -8,6 +8,9 @@ fs = require "fs"
 exports.ReadStream = fs.ReadStream
 exports.WriteStream = fs.WriteStream
 
+exports.open = fs.openSync
+exports.close = fs.closeSync
+
 exports.exists = (filePath) ->
   getMode(filePath) isnt undefined
 
