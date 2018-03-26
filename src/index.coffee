@@ -158,6 +158,7 @@ exports.copy = (srcPath, destPath) ->
   else fs.writeFileSync destPath, fs.readFileSync srcPath
 
 exports.watch = fs.watch
+exports.watchFile = fs.watchFile
 
 #
 # Helpers
