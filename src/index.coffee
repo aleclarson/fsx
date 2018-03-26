@@ -118,7 +118,7 @@ exports.removeFile = (filePath, mustExist = true) ->
     return unless mustExist
     uhoh "Cannot use `removeFile` on a non-existent path: '#{filePath}'", "FILE_NOT_FOUND"
   if mode is S_IFDIR
-    uhoh "Cannot use `removeFile` on a directory: '#{filePath}'", "FILE_NOT_FOUND"
+    uhoh "Cannot use `removeFile` on a directory: '#{filePath}'", "DIR_EXISTS"
   return fs.unlinkSync filePath
 
 exports.rename = (srcPath, destPath) ->
