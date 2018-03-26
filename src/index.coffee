@@ -113,8 +113,9 @@ exports.removeDir = (dirPath, recursive = true) ->
     return removeTree dirPath
   return fs.rmdirSync dirPath
 
-exports.removeFile = (filePath) ->
+exports.removeFile = (filePath, mustExist = true) ->
   unless mode = getMode filePath
+    return unless mustExist
     uhoh "Cannot use `removeFile` on a non-existent path: '#{filePath}'", "FILE_NOT_FOUND"
   if mode is S_IFDIR
     uhoh "Cannot use `removeFile` on a directory: '#{filePath}'", "FILE_NOT_FOUND"
