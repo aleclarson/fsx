@@ -15,6 +15,16 @@ exports.close = fs.closeSync
 exports.stat = fs.statSync
 exports.lstat = fs.lstatSync
 
+exports.touch = (file) ->
+
+  if getMode(file) isnt undefined
+    time = Date.now() / 1000
+    fs.utimesSync file, time, time
+    return
+
+  fs.writeFileSync file, ''
+  return
+
 exports.read = (file, opts) ->
   if typeof file is "number"
     if opts then opts.fd = file
