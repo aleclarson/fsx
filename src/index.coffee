@@ -9,6 +9,7 @@ exports.ReadStream = fs.ReadStream
 exports.WriteStream = fs.WriteStream
 
 exports.open = fs.openSync
+exports.append = fs.appendFileSync
 exports.close = fs.closeSync
 
 exports.stat = fs.statSync
