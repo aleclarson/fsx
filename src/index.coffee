@@ -102,14 +102,16 @@ exports.writeLink = (linkPath, targetPath) ->
     return fs.symlinkSync targetPath, linkPath
   uhoh "Cannot use `writeLink` on an existing path: '#{linkPath}'", "PATH_EXISTS"
 
-exports.removeDir = (dirPath) ->
+exports.removeDir = (dirPath, recursive = true) ->
   unless mode = getMode dirPath
     uhoh "Cannot use `removeDir` on a non-existent path: '#{dirPath}'", "DIR_NOT_FOUND"
   if mode isnt S_IFDIR
     uhoh "Expected a directory: '#{dirPath}'", "DIR_NOT_FOUND"
   if ".." is path.relative(process.cwd(), dirPath).slice 0, 2
     uhoh "Cannot use `removeDir` on paths outside of the current directory: '#{dirPath}'", "ABOVE_CWD"
-  return removeTree dirPath
+  if recursive
+    return removeTree dirPath
+  return fs.rmdirSync dirPath
 
 exports.removeFile = (filePath) ->
   unless mode = getMode filePath
