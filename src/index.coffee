@@ -103,8 +103,7 @@ exports.writeLink = (linkPath, targetPath) ->
   uhoh "Cannot use `writeLink` on an existing path: '#{linkPath}'", "PATH_EXISTS"
 
 exports.removeDir = (dirPath, recursive = true) ->
-  unless mode = getMode dirPath
-    uhoh "Cannot use `removeDir` on a non-existent path: '#{dirPath}'", "DIR_NOT_FOUND"
+  return unless mode = getMode dirPath
   if mode isnt S_IFDIR
     uhoh "Expected a directory: '#{dirPath}'", "DIR_NOT_FOUND"
   if ".." is path.relative(process.cwd(), dirPath).slice 0, 2
