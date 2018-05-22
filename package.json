@@ -1,6 +1,6 @@
 {
   "name": "fsx",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "main": "js/index",
   "scripts": {
     "build": "coffee-build src -o js",
