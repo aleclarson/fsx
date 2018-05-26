@@ -66,6 +66,9 @@ exports.readFile = (filePath, encoding) ->
   encoding = "utf8" if encoding is undefined
   return fs.readFileSync filePath, encoding
 
+# Resolve the given path and its parents.
+exports.realPath = fs.realpathSync
+
 exports.readLink = (linkPath) ->
   unless mode = getMode linkPath
     uhoh "Cannot use `readLink` on a non-existent path: '#{linkPath}'", "LINK_NOT_FOUND"
