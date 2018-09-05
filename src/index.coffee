@@ -14,6 +14,7 @@ exports.close = fs.closeSync
 
 exports.stat = fs.statSync
 exports.lstat = fs.lstatSync
+exports.chmod = fs.chmodSync
 
 exports.touch = (file) ->
 
