@@ -1,5 +1,5 @@
 
-# fsx v1.8.0 ![stable](https://img.shields.io/badge/stability-stable-4EBA0F.svg?style=flat)
+# fsx v1.9.0 ![stable](https://img.shields.io/badge/stability-stable-4EBA0F.svg?style=flat)
 
 Bare essentials `fs` wrapper. Zero dependencies.
 
